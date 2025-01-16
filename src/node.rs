@@ -16,7 +16,7 @@ impl Node{
     }
 
     pub fn write(&mut self,data: &Vec<u128>)-> Result<u8,String>{
-        if u128::from(data.len())>self.contig{
+        if data.len()> self.contig as usize {
             Err("to much data".to_string())
         } else {
             self.data.clear();
