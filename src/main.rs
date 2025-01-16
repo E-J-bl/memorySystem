@@ -22,9 +22,9 @@ fn main() {
     println!("\n{}", x);
 
     let y=mem.malloc(128);
-    //let z=mem.malloc(2);
+    let z=mem.malloc(2);
 
-    //println!("{},{}",y,z);
+    println!("{:?},{:?}",y,z);
     println!("{:?}",sorted_keys_to_vec(&mem.free_table));
     println!(
         "{}",
