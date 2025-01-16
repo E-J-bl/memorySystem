@@ -1,15 +1,15 @@
-enum privileges{
-    creator,
-    local,
-    global
+enum Privileges{
+    Creator,
+    Local,
+    Global
 }
-struct dir_node{
+struct DirNode {
     pub name:String,
     place_mem:u32,
     pub next_chain:u32,
 }
 
-impl dir_node{
+impl DirNode {
     pub fn new(name:String,){
 
     }
@@ -22,19 +22,19 @@ pub struct dir{
     time_of_last_access: u128,
     last_in_chain:u32,
     first_in_chain:u32,
-    dir_chain:Vec<dir_node>
+    dir_chain:Vec<DirNode>
 
 }
 
 impl dir {
-    pub fn new(&mut self,address_out:u32,level:privileges,encryp:Option<u8>,spectial_char:Option<u64>){
+    pub fn new(&mut self,address_out:u32,level:Privileges,encryp:Option<u8>,spectial_char:Option<u64>){
         let spectial_char=spectial_char.unwrap_or(0);
         let encryp= encryp.unwrap_or(0);
         self.address_out=address_out;
         match level {
-            privileges::creator=> self.ownership.0=u8::MAX,
-            privileges::local=> self.ownership.1=u8::MAX,
-            privileges::global=> self.ownership.2=u8::MAX,
+            Privileges::Creator => self.ownership.0=u8::MAX,
+            Privileges::Local => self.ownership.1=u8::MAX,
+            Privileges::Global => self.ownership.2=u8::MAX,
         }
         self.encryption=encryp;
         self.special_characteristics=spectial_char;
