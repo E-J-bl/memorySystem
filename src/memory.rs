@@ -52,7 +52,12 @@ impl Memory{
         value
     }
     fn mall_under_128(&mut self, num_addresses:u8) -> u32 {
-        let mut test:u128=Self::left_shift_until_msb(2**num_addresses);
+        let mut test:u128;
+        if num_addresses<128 {
+            test = Self::left_shift_until_msb((2 * *(&num_addresses)) as u128);
+        }else {
+            test=u128::MAX;
+        }
         let mut offset:u32=0;
         let mut cur_addr:u32=0;
 
@@ -62,6 +67,7 @@ impl Memory{
             //two possibilities it fits inside, or it fits over two blocks
             while test.count_ones()==num_addresses as u32{
                 if test & self.free_table.get(&cur_addr).unwrap()==0{
+                    self.free_table.insert(cur_addr,self.free_table.get(&cur_addr).unwrap()| test);
                     return cur_addr*128+offset;
                 }
                 else{
@@ -81,11 +87,12 @@ impl Memory{
 
 
     pub fn malloc(&mut self, num_addresses:u16) -> u32 {
-        if num_addresses<129{
-            return self.mall_under_128(num_addresses as u8)
 
+        if num_addresses<129{
+
+            return self.mall_under_128(num_addresses as u8)
         } else{
-            return
+            return 0
         }
 
     }

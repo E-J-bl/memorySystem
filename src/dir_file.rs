@@ -1,4 +1,4 @@
-pub enum privileges{
+enum privileges{
     creator,
     local,
     global
