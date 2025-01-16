@@ -14,7 +14,7 @@ impl DirNode {
 
     }
 }
-pub struct dir{
+pub struct Dir {
     pub address_out: u32,
     ownership: (u8, u8, u8),// copying unix design
     encryption:u8,
@@ -26,7 +26,7 @@ pub struct dir{
 
 }
 
-impl dir {
+impl Dir {
     pub fn new(&mut self,address_out:u32,level:Privileges,encryp:Option<u8>,spectial_char:Option<u64>){
         let spectial_char=spectial_char.unwrap_or(0);
         let encryp= encryp.unwrap_or(0);
