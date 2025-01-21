@@ -12,27 +12,39 @@ fn sorted_keys_to_vec(hash_map: &HashMap<u32, u128>) ->  Vec<(u32, u128)>{
     keys.iter().map(|&&x| (x,hash_map[&x])).collect()
          // Collect formatted strings into a Vec
 }
+fn print_bin_memory_free_table(mem: &memory::Memory)-> String{
+    sorted_keys_to_vec(&mem.free_table)
+        .iter()
+        .map(|val| format!("{}:{:#b},  ", val.0,val.1))
+        .collect::<Vec<_>>()
+        .join("")
+}
+
 
 fn main() {
     let mut mem = memory::Memory::new(100);
 
-    let x: u128 = mem.access(0);
 
-    println!("{}", mem);
-    println!("\n{}", x);
+    println!(
+        "{}",
+        print_bin_memory_free_table(&mem)
+    );
 
-    let y=mem.malloc(128);
+
+
+
+    let y=mem.malloc(127);
+    println!(
+        "{}",
+        print_bin_memory_free_table(&mem)
+    );
+
     let z=mem.malloc(2);
 
     println!("{:?},{:?}",y,z);
-    println!("{:?}",sorted_keys_to_vec(&mem.free_table));
     println!(
         "{}",
-        sorted_keys_to_vec(&mem.free_table)
-            .iter()
-            .map(|val| format!("{}:{:#b},  ", val.0,val.1))
-            .collect::<Vec<_>>()
-            .join("")
+        print_bin_memory_free_table(&mem)
     );
 
 
