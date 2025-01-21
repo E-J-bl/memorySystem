@@ -59,9 +59,9 @@ impl Memory{
         let mut offset:u32=0;
         let mut cur_addr:u32=0;
         let mut found_space=false;
-        let mut reg_0:&u128= self.free_table.get(&cur_addr).unwrap();
-        let mut reg_1: &u128= self.free_table.get(&(cur_addr + 1)).unwrap();
-        let mut buff_one:u128= 2_u128.pow(128-num_addresses);
+        let mut reg_0: u128 = *self.free_table.get(&cur_addr).unwrap();
+        let mut reg_1: u128= *self.free_table.get(&(cur_addr + 1)).unwrap();
+        let mut buff_one:u128= 2_u128.pow(128-num_addresses)-1;
         let mut buff_two:u128= u128::MAX;
 
         while !found_space{
@@ -70,16 +70,17 @@ impl Memory{
                 continue
             }
 
-            if !(reg_0 & buff_one== 0) & !(reg_1& buff_two ==0){
+            if !(reg_0 & buff_one== 0) | !(reg_1& buff_two ==0){
                 offset+=1;
                 if offset>128{
                     cur_addr+=1;
                     offset=0;
                     reg_0=reg_1;
-                    reg_1=self.free_table.get(&(cur_addr+1)).unwrap();
+                    reg_1=*self.free_table.get(&(cur_addr+1)).unwrap();
                 }
 
-                buff_one=Self::left_shift_until_msb((2_u128.pow(offset) - 1) ) + 2_u128.pow(128-num_addresses);
+                buff_one=Self::left_shift_until_msb((2_u128.pow(offset) - 1) )+(2_u128.pow(128-num_addresses-offset)-1);
+
                 if 128-(num_addresses  +offset)<=128{
                     buff_two=u128::MAX
 
@@ -96,7 +97,9 @@ impl Memory{
         }
 
         if offset+num_addresses<=128{
-            self.free_table.insert(cur_addr, reg_0 + (2_u128.pow(num_addresses) - 1)<<(offset));
+
+            let r1=reg_0 + (2_u128.pow(num_addresses) - 1)<<(offset);
+            self.free_table.insert(cur_addr, r1);
         }
         return return_address
     }

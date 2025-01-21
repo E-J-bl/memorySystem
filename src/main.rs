@@ -24,7 +24,6 @@ fn print_bin_memory_free_table(mem: &memory::Memory)-> String{
 fn main() {
     let mut mem = memory::Memory::new(100);
 
-
     println!(
         "{}",
         print_bin_memory_free_table(&mem)
@@ -38,6 +37,7 @@ fn main() {
         "{}",
         print_bin_memory_free_table(&mem)
     );
+    print!("{:#b}",mem.free_table.get(&0).unwrap()+1);
 
     let z=mem.malloc(2);
 
