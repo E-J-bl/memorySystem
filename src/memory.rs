@@ -46,8 +46,7 @@ impl Memory{
 
     fn left_shift_until_msb(mut value: u128) -> u128 {
 
-        let msb_mask:u128 = (1 << (u128::BITS - 1)); // Mask for the MSB (0b1000_0000 for u8)
-
+        let msb_mask:u128 = 1 << (u128::BITS - 1); // Mask for the MSB (0b1000_0000 for u8)
         while value & msb_mask == 0 {
             value <<= 1; // Left shift by 1
         }
@@ -70,30 +69,33 @@ impl Memory{
                 continue
             }
 
-            if !(reg_0 & buff_one== 0) | !(reg_1& buff_two ==0){
+
+            if (reg_0 & buff_one== 0) & (reg_1& buff_two ==0){
+                found_space=true;
+                return_address=128*cur_addr+offset;
+
+
+            }else {
                 offset+=1;
-                if offset>128{
+                if offset>127{
                     cur_addr+=1;
                     offset=0;
                     reg_0=reg_1;
                     reg_1=*self.free_table.get(&(cur_addr+1)).unwrap();
                 }
+                println!("{}", offset);
 
-                buff_one=Self::left_shift_until_msb((2_u128.pow(offset) - 1) )+(2_u128.pow(128-num_addresses-offset)-1);
-
-                if 128-(num_addresses  +offset)<=128{
-                    buff_two=u128::MAX
+                if (num_addresses  +offset)<=128{
+                    buff_two=u128::MAX;
+                    buff_one=Self::left_shift_until_msb(2_u128.pow(offset) - 1) +(2_u128.pow(128-num_addresses-offset)-1);
 
                 } else {
-                    buff_two = 2_u32.pow(256 - offset - num_addresses) as u128
+                    buff_two = 2_u128.pow(256 - offset - num_addresses) ;
+                    buff_one=Self::left_shift_until_msb(2_u128.pow(offset) - 1);
                 }
+                // somewhere here is a bug that gets me stuck in a loop the second that the address ticks up by 1
             }
-            else if (reg_0 & buff_one== 0) & (reg_1& buff_two ==0){
-                found_space=true;
-                return_address=128*cur_addr+offset;
 
-
-            }
         }
 
         if offset+num_addresses<=128{
@@ -116,7 +118,7 @@ impl Memory{
         while !found{
             if self.free_table.get(&cur_addr)!=Option::None{
                 found_min_cont=true;
-                for i  in (0..contig_min){
+                for i  in 0..contig_min{
                     if self.free_table.get(&(cur_addr+(i as u32))).unwrap()!= &u128::MIN{
                         found_min_cont=false;
                     } else {
@@ -127,16 +129,16 @@ impl Memory{
                     let before= self.free_table.get(&(cur_addr - 1)).unwrap().trailing_zeros();
                     let after= self.free_table.get(&(cur_addr+contig_min+1)).unwrap().leading_zeros();
 
-                    if (before+after+128*contig_min>=num_addresses as u32) {
-                        self.free_table.insert((cur_addr-1), match self.free_table.get(&(cur_addr - 1)) {
+                    if before+after+128*contig_min>=num_addresses as u32 {
+                        self.free_table.insert(cur_addr-1, match self.free_table.get(&(cur_addr - 1)) {
                             Some(x) => x,
                             None => panic!(),
                         } & (2 ** &before - 1)as u128);
-                        for i in (0..contig_min){
+                        for i in 0..contig_min{
                             self.free_table.insert(cur_addr+i,u128::MAX);
                         };
-                        self.free_table.insert((cur_addr+contig_min+1),self.free_table.get(&(cur_addr+contig_min+1)).unwrap()& Self::left_shift_until_msb((2 * *&after - 1) as u128));
-                        return ((cur_addr)*128-before,(cur_addr+contig_min)*128+after);
+                        self.free_table.insert(cur_addr+contig_min+1,self.free_table.get(&(cur_addr+contig_min+1)).unwrap()& Self::left_shift_until_msb((2 * *&after - 1) as u128));
+                        return (cur_addr*128-before,(cur_addr+contig_min)*128+after);
 
                         //need to change so it does not just fill the last address it only fills as much as it needs;
 
