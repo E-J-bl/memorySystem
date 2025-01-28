@@ -2,6 +2,7 @@ use crate::memory;
 
 
 pub struct Node{
+    key:u128,
     pub contig: u128,
     data: Vec<u128>,
     end_car: u128,
@@ -10,7 +11,7 @@ pub struct Node{
 
 impl Node{
 
-    pub fn new(contig: u128)-> Self{ Self{contig, data: Vec::new(), end_car: 255, link: 0}
+    pub fn new(key:u128,contig: u128)-> Self{ Self{key,contig, data: Vec::new(), end_car: 255, link: 0}
 
     }
 

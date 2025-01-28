@@ -1,7 +1,7 @@
 
 use std::collections::HashMap;
 use std::fmt;
-
+use std::time::{SystemTime, UNIX_EPOCH};
 use itertools::Itertools;
 
 pub struct Memory {
@@ -62,15 +62,16 @@ impl Memory{
         let mut reg_1: u128= *self.free_table.get(&(cur_addr + 1)).unwrap();
         let mut buff_one:u128= 2_u128.pow(128-num_addresses)-1;
         let mut buff_two:u128= u128::MAX;
-
         while !found_space{
+            //println!("{},{},{:0128b},{:0128b},{:0128b},{:0128b}",offset,256 - offset - num_addresses,reg_0,!buff_one,reg_1,!buff_two);
             if cur_addr>=100{
                 found_space=true;
                 continue
             }
 
 
-            if (reg_0 & buff_one== 0) & (reg_1& buff_two ==0){
+            if (reg_0 & !buff_one== 0) & (reg_1& !buff_two ==0){
+
                 found_space=true;
                 return_address=128*cur_addr+offset;
 
@@ -82,26 +83,44 @@ impl Memory{
                     offset=0;
                     reg_0=reg_1;
                     reg_1=*self.free_table.get(&(cur_addr+1)).unwrap();
-                }
-                println!("{}", offset);
-
-                if (num_addresses  +offset)<=128{
+                    buff_one=2_u128.pow(128-num_addresses)-1;
                     buff_two=u128::MAX;
-                    buff_one=Self::left_shift_until_msb(2_u128.pow(offset) - 1) +(2_u128.pow(128-num_addresses-offset)-1);
+
+                }
+
+
+                else if (num_addresses  +offset)<=128{
+
+                    buff_one=buff_one/2+Self::left_shift_until_msb(2_u128.pow(offset));
 
                 } else {
-                    buff_two = 2_u128.pow(256 - offset - num_addresses) ;
+                    buff_two = !(u128::MAX-(2_u128.pow(256 - offset - num_addresses)-1)) ;
                     buff_one=Self::left_shift_until_msb(2_u128.pow(offset) - 1);
+
                 }
                 // somewhere here is a bug that gets me stuck in a loop the second that the address ticks up by 1
             }
 
         }
 
+
         if offset+num_addresses<=128{
 
-            let r1=reg_0 + (2_u128.pow(num_addresses) - 1)<<(offset);
+            let r1:u128;
+            if num_addresses==128{
+                r1 = u128::MAX;
+            }else {
+                r1 = reg_0 + (Self::left_shift_until_msb(2_u128.pow(num_addresses) - 1) >> (offset));
+            }
+
             self.free_table.insert(cur_addr, r1);
+        }else{
+
+            let r1=reg_0 +(2_u128.pow(num_addresses) - 1)/2_u128.pow(offset);
+            let r2= reg_1+Self::left_shift_until_msb(2_u128.pow(offset+num_addresses-128));
+            self.free_table.insert(cur_addr,r1);
+
+            self.free_table.insert(cur_addr+1,r2);
         }
         return return_address
     }
@@ -168,13 +187,15 @@ impl Memory{
 
 
 
-    pub fn malloc(&mut self, num_addresses:u16) -> (u32,u32) {
+    pub fn malloc(&mut self, num_addresses:u16) -> (u128,u32,u32) {
 
-        if num_addresses<129{
-            let st=self.mall_under_128(num_addresses as u32);
-            return (st,st+num_addresses as u32)
+        if num_addresses<128{
+            let st=self.mall_under_128((num_addresses+1) as u32);
+            let key:u128= SystemTime::now().duration_since(UNIX_EPOCH).expect("error with the time").as_nanos() ;
+            self.flash.insert(st,key);
+            return (key,st,st+num_addresses as u32)
         } else{
-            return (0,0)
+            return (0,0,0)
         }
 
     }
