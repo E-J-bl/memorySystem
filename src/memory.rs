@@ -188,6 +188,7 @@ impl Memory{
 
 
     pub fn malloc(&mut self, num_addresses:u16) -> (u128,u32,u32) {
+        //returns the key for the region, the start and the end of the  region which it has permissions for
 
         if num_addresses<128{
             let st=self.mall_under_128((num_addresses+1) as u32);
