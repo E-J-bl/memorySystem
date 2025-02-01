@@ -29,10 +29,10 @@ impl Memory{
     }
     pub fn access(&self, addr: u32) -> u128{
         if self.flash.contains_key(&addr){
-            return *self.flash.get(&addr).unwrap();
+            *self.flash.get(&addr).unwrap()
         }
         else {
-            return 0
+            0
         } }
 
     pub fn write(&mut self, addr: u32, value: u128)-> (){
@@ -64,7 +64,7 @@ impl Memory{
         let mut buff_two:u128= u128::MAX;
         while !found_space{
             //println!("{},{},{:0128b},{:0128b},{:0128b},{:0128b}",offset,256 - offset - num_addresses,reg_0,!buff_one,reg_1,!buff_two);
-            if cur_addr>=100{
+            if &cur_addr>= (self.free_table.iter().max().unwrap().0) {
                 found_space=true;
                 continue
             }
@@ -122,7 +122,7 @@ impl Memory{
 
             self.free_table.insert(cur_addr+1,r2);
         }
-        return return_address
+        return_address
     }
 
 
@@ -135,10 +135,10 @@ impl Memory{
         let contig_min:u32= ((num_addresses / 128) - 1) as u32;
         let mut found_min_cont=false;
         while !found{
-            if self.free_table.get(&cur_addr)!=Option::None{
+            if self.free_table.get(&cur_addr)!=None{
                 found_min_cont=true;
                 for i  in 0..contig_min{
-                    if self.free_table.get(&(cur_addr+(i as u32))).unwrap()!= &u128::MIN{
+                    if self.free_table.get(&(cur_addr+(i))).unwrap()!= &u128::MIN{
                         found_min_cont=false;
                     } else {
 
@@ -194,9 +194,9 @@ impl Memory{
             let st=self.mall_under_128((num_addresses+1) as u32);
             let key:u128= SystemTime::now().duration_since(UNIX_EPOCH).expect("error with the time").as_nanos() ;
             self.flash.insert(st,key);
-            return (key,st,st+num_addresses as u32)
+            (key,st,st+num_addresses as u32)
         } else{
-            return (0,0,0)
+            (0,0,0)
         }
 
     }
