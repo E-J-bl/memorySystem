@@ -1,3 +1,4 @@
+use std::time::{SystemTime, UNIX_EPOCH};
 enum Privileges{
     Creator,
     Local,
@@ -38,7 +39,7 @@ impl Dir {
         }
         self.encryption=encryp;
         self.special_characteristics=spectial_char;
-        //need to find a get time in form i want
+        self.time_of_last_access= SystemTime::now().duration_since(UNIX_EPOCH).expect("error with the time").as_nanos();
     }
 
 
